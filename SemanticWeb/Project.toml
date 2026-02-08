@@ -1,0 +1,17 @@
+name = "SemanticWeb"
+uuid = "ba911448-15fe-485b-b783-1ac0acc89a52"
+version = "0.1.0"
+authors = ["Åsmund Hjulstad <ahju@equinor.com>"]
+
+[deps]
+Serd = "42699a24-3520-5f41-a549-6a478ed667c2"
+
+[compat]
+Serd = "0.3.1"
+julia = "1.9"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

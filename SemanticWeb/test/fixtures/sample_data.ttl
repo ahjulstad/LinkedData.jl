@@ -1,0 +1,18 @@
+@prefix ex: <http://example.org/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+ex:alice a foaf:Person ;
+    foaf:name "Alice" ;
+    foaf:age "30"^^<http://www.w3.org/2001/XMLSchema#integer> ;
+    foaf:knows ex:bob, ex:charlie ;
+    foaf:mbox <mailto:alice@example.org> .
+
+ex:bob a foaf:Person ;
+    foaf:name "Bob" ;
+    foaf:age "25"^^<http://www.w3.org/2001/XMLSchema#integer> ;
+    foaf:knows ex:charlie .
+
+ex:charlie a foaf:Person ;
+    foaf:name "Charlie"@en ;
+    foaf:name "Carlos"@es ;
+    foaf:age "35"^^<http://www.w3.org/2001/XMLSchema#integer> .
