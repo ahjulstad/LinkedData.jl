@@ -3,7 +3,8 @@
 	"features": {
 		"ghcr.io/julialang/devcontainer-features/julia:1": {
 			"channel": "release"
-		}
+		},
+		"ghcr.io/jsburckhardt/devcontainer-features/uv:1": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -12,5 +13,6 @@
 				"julialang.language-julia"
 			]
 		}
-	}
+	},
+	"postCreateCommand": "npm install -g @anthropic-ai/claude-code && mkdir -p /home/node/.claude/mcp-servers && git clone https://github.com/aplavin/julia-mcp.git /home/node/.claude/mcp-servers/julia-mcp"
 }
