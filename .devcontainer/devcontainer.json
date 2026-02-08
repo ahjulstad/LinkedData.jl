@@ -4,5 +4,13 @@
 		"ghcr.io/julialang/devcontainer-features/julia:1": {
 			"channel": "release"
 		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Anthropic.claude-code",
+				"julialang.language-julia"
+			]
+		}
 	}
 }
