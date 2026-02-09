@@ -25,11 +25,11 @@ mutable struct PropertyShape <: Shape
 
     function PropertyShape(path::IRI;
                           id::Union{IRI, BlankNode, Nothing}=nothing,
-                          constraints::Vector{Constraint}=Constraint[],
+                          constraints::Vector{<:Constraint}=Constraint[],
                           message::Union{String, Nothing}=nothing,
                           severity::Symbol=:Violation,
                           name::Union{String, Nothing}=nothing)
-        new(id, path, constraints, message, severity, name)
+        new(id, path, convert(Vector{Constraint}, constraints), message, severity, name)
     end
 end
 
@@ -46,13 +46,14 @@ mutable struct NodeShape <: Shape
     deactivated::Bool
 
     function NodeShape(id::Union{IRI, BlankNode};
-                      targets::Vector{Target}=Target[],
-                      constraints::Vector{Constraint}=Constraint[],
+                      targets::Vector{<:Target}=Target[],
+                      constraints::Vector{<:Constraint}=Constraint[],
                       property_shapes::Vector{PropertyShape}=PropertyShape[],
                       message::Union{String, Nothing}=nothing,
                       severity::Symbol=:Violation,
                       deactivated::Bool=false)
-        new(id, targets, constraints, property_shapes, message, severity, deactivated)
+        new(id, convert(Vector{Target}, targets), convert(Vector{Constraint}, constraints),
+            property_shapes, message, severity, deactivated)
     end
 end
 

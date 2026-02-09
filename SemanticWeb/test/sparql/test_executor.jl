@@ -440,4 +440,61 @@
         @test result[1] isa Dict{Symbol, RDFNode}
         @test length(result) == 3
     end
+
+    @testset "Type invariance - concrete pattern vectors" begin
+        # All query constructors should accept Vector{TriplePattern} (not just Vector{GraphPattern})
+        tp = TriplePattern(:s, :p, :o)
+
+        @testset "SelectQuery" begin
+            q = SelectQuery([:s], [tp])
+            @test q isa SelectQuery
+            @test q.where_clause isa Vector{GraphPattern}
+        end
+
+        @testset "ConstructQuery" begin
+            q = ConstructQuery([tp], [tp])
+            @test q isa ConstructQuery
+            @test q.where_clause isa Vector{GraphPattern}
+        end
+
+        @testset "AskQuery" begin
+            q = AskQuery([tp])
+            @test q isa AskQuery
+            @test q.where_clause isa Vector{GraphPattern}
+        end
+
+        @testset "DescribeQuery" begin
+            q = DescribeQuery([alice], [tp])
+            @test q isa DescribeQuery
+            @test q.resources isa Vector{Union{Symbol, RDFNode}}
+
+            # Also accepts symbols
+            q2 = DescribeQuery([:person])
+            @test q2 isa DescribeQuery
+        end
+
+        @testset "OptionalPattern" begin
+            p = OptionalPattern([tp])
+            @test p isa OptionalPattern
+            @test p.patterns isa Vector{GraphPattern}
+        end
+
+        @testset "UnionPattern" begin
+            p = UnionPattern([tp], [tp])
+            @test p isa UnionPattern
+        end
+
+        @testset "GroupPattern" begin
+            p = GroupPattern([tp])
+            @test p isa GroupPattern
+            @test p.patterns isa Vector{GraphPattern}
+        end
+
+        @testset "Mixed pattern vectors" begin
+            opt = OptionalPattern([tp])
+            filter = FilterPattern(ComparisonExpr(:gt, VarExpr(:age), LiteralExpr(Literal("30", XSD.integer))))
+            q = SelectQuery([:s], GraphPattern[tp, opt, filter])
+            @test length(q.where_clause) == 3
+        end
+    end
 end

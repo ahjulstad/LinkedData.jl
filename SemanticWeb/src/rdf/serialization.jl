@@ -104,31 +104,14 @@ function save(store::RDFStore, filepath::String;
              format::Symbol=:turtle,
              base::Union{String, Nothing}=nothing)
 
-    syntax = _format_to_syntax(format)
+    fmt = _format_to_syntax(format)
 
-    try
-        # Prepare statements for Serd
-        statements = Serd.RDF.Statement[]
-
-        # Add namespace prefixes
-        for (name, iri) in store.namespaces
-            push!(statements, Serd.RDF.Prefix(name, iri.value))
+    open(filepath, "w") do io
+        if fmt in ("turtle", "trig")
+            _write_turtle(io, store)
+        else
+            _write_ntriples(io, store)
         end
-
-        # Add triples
-        for triple in triples(store)
-            stmt = _triple_to_serd(triple)
-            if !isnothing(stmt)
-                push!(statements, stmt)
-            end
-        end
-
-        # Write to file using Serd
-        open(filepath, "w") do io
-            Serd.write_rdf(io, statements, syntax=syntax)
-        end
-    catch e
-        throw(ErrorException("Failed to write RDF: $(e)"))
     end
 
     return nothing
@@ -207,7 +190,7 @@ end
 """
 Convert a Serd resource (subject/predicate) to our RDF node types.
 """
-function _serd_resource_to_node(resource::Serd.RDF.Resource, prefix_map::Dict{String, String})::Union{IRI, BlankNode}
+function _serd_resource_to_node(resource::Serd.RDF.Node, prefix_map::Dict{String, String})::Union{IRI, BlankNode}
     if resource isa Serd.RDF.ResourceURI
         return IRI(resource.uri)
     elseif resource isa Serd.RDF.ResourceCURIE
@@ -228,7 +211,7 @@ end
 """
 Convert a Serd object (can be resource or literal) to our RDF node types.
 """
-function _serd_object_to_node(obj::Union{Serd.RDF.Resource, Serd.RDF.Literal}, prefix_map::Dict{String, String})::RDFNode
+function _serd_object_to_node(obj::Serd.RDF.Node, prefix_map::Dict{String, String})::RDFNode
     if obj isa Serd.RDF.Literal
         # Serd.jl converts typed literals to native Julia types
         # We need to infer the datatype from the Julia type
@@ -239,13 +222,13 @@ function _serd_object_to_node(obj::Union{Serd.RDF.Resource, Serd.RDF.Literal}, p
             return Literal(value_str, lang=obj.language)
         end
 
-        # Infer datatype from Julia type
-        datatype = if obj.value isa Integer
+        # Infer datatype from Julia type (Bool before Integer since Bool <: Integer)
+        datatype = if obj.value isa Bool
+            XSD.boolean
+        elseif obj.value isa Integer
             XSD.integer
         elseif obj.value isa AbstractFloat
             XSD.double
-        elseif obj.value isa Bool
-            XSD.boolean
         else
             nothing  # Plain string literal
         end
@@ -262,53 +245,77 @@ function _serd_object_to_node(obj::Union{Serd.RDF.Resource, Serd.RDF.Literal}, p
 end
 
 """
-Convert our Triple to a Serd triple.
+Write store contents in N-Triples format.
 """
-function _triple_to_serd(triple::Triple)::Union{Serd.RDF.Triple, Nothing}
-    try
-        subject = _node_to_serd_resource(triple.subject)
-        predicate = _node_to_serd_resource(triple.predicate)
-        object = _node_to_serd_object(triple.object)
-
-        return Serd.RDF.Triple(subject, predicate, object)
-    catch e
-        @warn "Failed to convert triple to Serd: $e"
-        return nothing
+function _write_ntriples(io::IO, store::RDFStore)
+    for triple in triples(store)
+        print(io, _serialize_subject(triple.subject), " ")
+        print(io, "<", triple.predicate.value, "> ")
+        print(io, _serialize_object(triple.object))
+        println(io, " .")
     end
 end
 
 """
-Convert our RDF node to a Serd resource (for subject/predicate).
+Write store contents in Turtle format.
 """
-function _node_to_serd_resource(node::Union{IRI, BlankNode})::Serd.RDF.Resource
+function _write_turtle(io::IO, store::RDFStore)
+    # Write namespace prefixes
+    for (name, iri) in store.namespaces
+        println(io, "@prefix ", name, ": <", iri.value, "> .")
+    end
+    if !isempty(store.namespaces)
+        println(io)
+    end
+
+    # Group triples by subject
+    subjects = Dict{RDFNode, Vector{Triple}}()
+    for triple in triples(store)
+        push!(get!(subjects, triple.subject, Triple[]), triple)
+    end
+
+    first_subject = true
+    for (subject, subject_triples) in subjects
+        first_subject || println(io)
+        first_subject = false
+
+        print(io, _serialize_subject(subject))
+        for (i, triple) in enumerate(subject_triples)
+            if i == 1
+                print(io, " ")
+            else
+                print(io, " ;\n    ")
+            end
+            print(io, "<", triple.predicate.value, "> ")
+            print(io, _serialize_object(triple.object))
+        end
+        println(io, " .")
+    end
+end
+
+"""Serialize an RDF subject node."""
+function _serialize_subject(node::Union{IRI, BlankNode})::String
     if node isa IRI
-        return Serd.RDF.ResourceURI(node.value)
-    elseif node isa BlankNode
-        # Strip the "_:" prefix if present
-        name = startswith(node.id, "_:") ? node.id[3:end] : node.id
-        return Serd.RDF.Blank(name)
+        return "<$(node.value)>"
     else
-        throw(ArgumentError("Invalid resource type: $(typeof(node))"))
+        return node.id
     end
 end
 
-"""
-Convert our RDF node to a Serd object (can be resource or literal).
-"""
-function _node_to_serd_object(node::RDFNode)::Union{Serd.RDF.Resource, Serd.RDF.Literal}
+"""Serialize an RDF object node."""
+function _serialize_object(node::RDFNode)::String
     if node isa IRI
-        return Serd.RDF.ResourceURI(node.value)
+        return "<$(node.value)>"
     elseif node isa BlankNode
-        # Strip the "_:" prefix if present
-        name = startswith(node.id, "_:") ? node.id[3:end] : node.id
-        return Serd.RDF.Blank(name)
+        return node.id
     elseif node isa Literal
+        escaped = replace(node.value, "\\" => "\\\\", "\"" => "\\\"", "\n" => "\\n", "\r" => "\\r")
         if !isnothing(node.datatype)
-            return Serd.RDF.Literal(node.value, node.datatype.value)
+            return "\"$(escaped)\"^^<$(node.datatype.value)>"
         elseif !isnothing(node.language)
-            return Serd.RDF.Literal(node.value, "", node.language)
+            return "\"$(escaped)\"@$(node.language)"
         else
-            return Serd.RDF.Literal(node.value, "")
+            return "\"$(escaped)\""
         end
     else
         throw(ArgumentError("Unknown node type: $(typeof(node))"))

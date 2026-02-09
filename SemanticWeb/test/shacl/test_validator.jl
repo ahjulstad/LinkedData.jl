@@ -518,4 +518,41 @@
         report = validate(store, [shape])
         @test !report.conforms
     end
+
+    @testset "Type invariance - concrete constraint vectors" begin
+        person = IRI("http://example.org/alice")
+        name_pred = IRI("http://xmlns.com/foaf/0.1/name")
+
+        @testset "PropertyShape accepts concrete constraint types" begin
+            # Vector{MinCount} should be accepted as constraints
+            ps = PropertyShape(name_pred, constraints=[MinCount(1)])
+            @test ps isa PropertyShape
+            @test ps.constraints isa Vector{Constraint}
+        end
+
+        @testset "NodeShape accepts concrete target types" begin
+            ns = NodeShape(IRI("http://example.org/Shape"),
+                          targets=[TargetClass(IRI("http://xmlns.com/foaf/0.1/Person"))],
+                          constraints=[NodeKind(:IRI)])
+            @test ns isa NodeShape
+            @test ns.targets isa Vector{Target}
+            @test ns.constraints isa Vector{Constraint}
+        end
+
+        @testset "validate accepts Vector{NodeShape}" begin
+            store = RDFStore()
+            add!(store, person, RDF.type_, IRI("http://xmlns.com/foaf/0.1/Person"))
+            add!(store, person, name_pred, Literal("Alice"))
+
+            shape = NodeShape(IRI("http://example.org/Shape"),
+                            targets=[TargetClass(IRI("http://xmlns.com/foaf/0.1/Person"))],
+                            property_shapes=[
+                                PropertyShape(name_pred, constraints=[MinCount(1)])
+                            ])
+
+            # Should accept Vector{NodeShape} without needing Vector{Shape}
+            report = validate(store, [shape])
+            @test report.conforms
+        end
+    end
 end

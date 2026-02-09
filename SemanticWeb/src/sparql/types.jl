@@ -103,7 +103,7 @@ OPTIONAL pattern - pattern may not match
 struct OptionalPattern <: GraphPattern
     patterns::Vector{GraphPattern}
 
-    OptionalPattern(patterns::Vector{GraphPattern}) = new(patterns)
+    OptionalPattern(patterns::Vector{<:GraphPattern}) = new(convert(Vector{GraphPattern}, patterns))
 end
 
 """
@@ -113,7 +113,7 @@ struct UnionPattern <: GraphPattern
     left::Vector{GraphPattern}
     right::Vector{GraphPattern}
 
-    UnionPattern(left::Vector{GraphPattern}, right::Vector{GraphPattern}) = new(left, right)
+    UnionPattern(left::Vector{<:GraphPattern}, right::Vector{<:GraphPattern}) = new(convert(Vector{GraphPattern}, left), convert(Vector{GraphPattern}, right))
 end
 
 """
@@ -122,7 +122,7 @@ Graph pattern group (for nesting)
 struct GroupPattern <: GraphPattern
     patterns::Vector{GraphPattern}
 
-    GroupPattern(patterns::Vector{GraphPattern}) = new(patterns)
+    GroupPattern(patterns::Vector{<:GraphPattern}) = new(convert(Vector{GraphPattern}, patterns))
 end
 
 # ============================================================================
@@ -138,9 +138,9 @@ struct SelectQuery <: SPARQLQuery
     modifiers::QueryModifiers
     distinct::Bool
 
-    function SelectQuery(variables::Vector{Symbol}, where_clause::Vector{GraphPattern},
+    function SelectQuery(variables::Vector{Symbol}, where_clause::Vector{<:GraphPattern},
                         modifiers::QueryModifiers=QueryModifiers(), distinct::Bool=false)
-        new(variables, where_clause, modifiers, distinct)
+        new(variables, convert(Vector{GraphPattern}, where_clause), modifiers, distinct)
     end
 end
 
@@ -152,9 +152,9 @@ struct ConstructQuery <: SPARQLQuery
     where_clause::Vector{GraphPattern}
     modifiers::QueryModifiers
 
-    function ConstructQuery(template::Vector{TriplePattern}, where_clause::Vector{GraphPattern},
+    function ConstructQuery(template::Vector{<:TriplePattern}, where_clause::Vector{<:GraphPattern},
                            modifiers::QueryModifiers=QueryModifiers())
-        new(template, where_clause, modifiers)
+        new(convert(Vector{TriplePattern}, template), convert(Vector{GraphPattern}, where_clause), modifiers)
     end
 end
 
@@ -164,7 +164,7 @@ ASK query - returns boolean
 struct AskQuery <: SPARQLQuery
     where_clause::Vector{GraphPattern}
 
-    AskQuery(where_clause::Vector{GraphPattern}) = new(where_clause)
+    AskQuery(where_clause::Vector{<:GraphPattern}) = new(convert(Vector{GraphPattern}, where_clause))
 end
 
 """
@@ -174,9 +174,10 @@ struct DescribeQuery <: SPARQLQuery
     resources::Vector{Union{Symbol, RDFNode}}  # Variables or IRIs to describe
     where_clause::Union{Vector{GraphPattern}, Nothing}
 
-    function DescribeQuery(resources::Vector{Union{Symbol, RDFNode}},
-                          where_clause::Union{Vector{GraphPattern}, Nothing}=nothing)
-        new(resources, where_clause)
+    function DescribeQuery(resources::Vector{<:Union{Symbol, RDFNode}},
+                          where_clause::Union{Vector{<:GraphPattern}, Nothing}=nothing)
+        new(convert(Vector{Union{Symbol, RDFNode}}, resources),
+            isnothing(where_clause) ? nothing : convert(Vector{GraphPattern}, where_clause))
     end
 end
 

@@ -6,7 +6,7 @@
 
 Validate RDF data against SHACL shapes.
 """
-function validate(data_store::RDFStore, shapes::Vector{Shape})::ValidationReport
+function validate(data_store::RDFStore, shapes::Vector{<:Shape})::ValidationReport
     results = ValidationResult[]
 
     for shape in shapes
@@ -85,13 +85,13 @@ function validate_property_shape(store::RDFStore, node::RDFNode, shape::Property
     # Validate each constraint
     for constraint in shape.constraints
         # Check cardinality constraints against all values
-        if constraint isa MinCount || constraint isa MaxCount
+        if constraint isa MinCount || constraint isa MaxCount || constraint isa HasValue || constraint isa In
             violations = validate_constraint(store, node, shape.path, constraint, shape, values)
             append!(results, violations)
         else
             # Validate each value individually
             for value in values
-                violations = validate_constraint(store, node, shape.path, constraint, shape, [value])
+                violations = validate_constraint(store, node, shape.path, constraint, shape, RDFNode[value])
                 append!(results, violations)
             end
         end

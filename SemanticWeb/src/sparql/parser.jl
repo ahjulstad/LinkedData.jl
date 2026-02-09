@@ -10,14 +10,27 @@ function parse_sparql(query_string::String)::SPARQLQuery
     # Tokenize
     tokens = tokenize(query_string)
 
-    # Determine query type
-    if startswith_ignore_case(query_string, "SELECT")
+    # Determine query type from first non-PREFIX keyword
+    query_type = nothing
+    for token in tokens
+        if token.type == :keyword && token.value != "PREFIX"
+            query_type = token.value
+            break
+        elseif token.type == :keyword && token.value == "PREFIX"
+            continue
+        elseif token.type == :iri
+            # PREFIX name:, skip the IRI tokens that follow PREFIX
+            continue
+        end
+    end
+
+    if query_type == "SELECT"
         return parse_select(tokens)
-    elseif startswith_ignore_case(query_string, "CONSTRUCT")
+    elseif query_type == "CONSTRUCT"
         return parse_construct(tokens)
-    elseif startswith_ignore_case(query_string, "ASK")
+    elseif query_type == "ASK"
         return parse_ask(tokens)
-    elseif startswith_ignore_case(query_string, "DESCRIBE")
+    elseif query_type == "DESCRIBE"
         return parse_describe(tokens)
     else
         throw(ArgumentError("Unknown query type. Query must start with SELECT, CONSTRUCT, ASK, or DESCRIBE"))
@@ -316,7 +329,10 @@ end
 # ============================================================================
 
 function parse_where_clause(state::ParserState)::Vector{GraphPattern}
-    expect(state, :keyword, "WHERE")
+    # WHERE keyword is optional in SPARQL (e.g. ASK { ... })
+    if !isnothing(peek(state)) && peek(state).type == :keyword && peek(state).value == "WHERE"
+        advance(state)
+    end
     expect(state, :symbol, "{")
 
     patterns = parse_graph_patterns(state)

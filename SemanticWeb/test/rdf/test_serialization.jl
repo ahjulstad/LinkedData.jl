@@ -233,4 +233,72 @@
             @test_throws ErrorException parse_string!(store, bad_turtle, format=:turtle)
         end
     end
+
+    @testset "Typed literal round-trip" begin
+        store = RDFStore()
+        person = IRI("http://example.org/p1")
+        register_namespace!(store, "ex", IRI("http://example.org/"))
+
+        add!(store, person, IRI("http://example.org/int"), Literal("42", XSD.integer))
+        add!(store, person, IRI("http://example.org/dbl"), Literal("3.14", XSD.double))
+        add!(store, person, IRI("http://example.org/bool"), Literal("true", XSD.boolean))
+
+        temp = tempname() * ".ttl"
+        try
+            save(store, temp, format=:turtle)
+
+            loaded = RDFStore()
+            load!(loaded, temp)
+
+            @test count_triples(loaded) == 3
+            for triple in triples(store)
+                @test has_triple(loaded, triple)
+            end
+        finally
+            isfile(temp) && rm(temp)
+        end
+    end
+
+    @testset "N-Triples round-trip" begin
+        store = RDFStore()
+        s = IRI("http://example.org/s")
+
+        add!(store, s, IRI("http://example.org/p1"), Literal("hello"))
+        add!(store, s, IRI("http://example.org/p2"), Literal("42", XSD.integer))
+        add!(store, s, IRI("http://example.org/p3"), Literal("hola", lang="es"))
+        add!(store, s, IRI("http://example.org/p4"), IRI("http://example.org/o"))
+
+        temp = tempname() * ".nt"
+        try
+            save(store, temp, format=:ntriples)
+
+            loaded = RDFStore()
+            load!(loaded, temp, format=:ntriples)
+
+            @test count_triples(loaded) == count_triples(store)
+            for triple in triples(store)
+                @test has_triple(loaded, triple)
+            end
+        finally
+            isfile(temp) && rm(temp)
+        end
+    end
+
+    @testset "Blank node parsing" begin
+        store = RDFStore()
+        nt_data = """
+        _:b1 <http://example.org/name> "Node1" .
+        <http://example.org/s> <http://example.org/ref> _:b1 .
+        """
+
+        parse_string!(store, nt_data, format=:ntriples)
+        @test count_triples(store) == 2
+
+        # Verify blank nodes were parsed correctly
+        all = triples(store)
+        has_blank_subject = any(t -> t.subject isa BlankNode, all)
+        has_blank_object = any(t -> t.object isa BlankNode, all)
+        @test has_blank_subject
+        @test has_blank_object
+    end
 end

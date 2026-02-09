@@ -55,7 +55,7 @@ function execute_select(store::RDFStore, q::SelectQuery)::SelectResult
 
     # Project to selected variables only
     projected = map(solutions) do binding
-        Dict(var => binding[var] for var in q.variables if haskey(binding, var))
+        Dict{Symbol, RDFNode}(var => binding[var] for var in q.variables if haskey(binding, var))
     end
 
     return SelectResult(q.variables, projected)
