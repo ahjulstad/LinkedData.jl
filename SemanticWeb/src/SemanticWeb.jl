@@ -9,10 +9,20 @@ export load!, save, parse_string!
 
 # Export SPARQL types and functions
 export SPARQLQuery, SelectQuery, ConstructQuery, AskQuery, DescribeQuery
-export query, SelectResult, ConstructResult, AskResult, DescribeResult
+export TriplePattern, FilterPattern, OptionalPattern, UnionPattern, GroupPattern
+export GraphPattern, FilterExpression, QueryModifiers
+export VarExpr, LiteralExpr, ComparisonExpr, LogicalExpr, FunctionExpr, ArithmeticExpr
+export query, parse_sparql, SelectResult, ConstructResult, AskResult, DescribeResult
+export is_variable, is_bound, get_variables
 
 # Export SHACL types and functions
 export Shape, NodeShape, PropertyShape
+export Target, TargetClass, TargetNode, TargetSubjectsOf, TargetObjectsOf
+export Constraint, MinCount, MaxCount, Datatype, Class, NodeKind
+export MinLength, MaxLength, Pattern, LanguageIn, HasValue, In
+export MinInclusive, MaxInclusive, MinExclusive, MaxExclusive
+export Equals, Disjoint, LessThan, LessThanOrEquals
+export And, Or, Not, Xone, Closed, UniqueLang
 export validate, ValidationReport, ValidationResult
 
 # Export common namespaces
@@ -24,17 +34,16 @@ include("rdf/namespaces.jl")
 include("rdf/store.jl")
 include("rdf/serialization.jl")
 
-# Include SPARQL components (to be implemented)
-# include("sparql/types.jl")
-# include("sparql/parser.jl")
-# include("sparql/algebra.jl")
-# include("sparql/optimizer.jl")
-# include("sparql/executor.jl")
+# Include SPARQL components
+include("sparql/types.jl")
+include("sparql/executor.jl")
+include("sparql/parser.jl")
+# include("sparql/algebra.jl")  # To be implemented
+# include("sparql/optimizer.jl")  # To be implemented
 
-# Include SHACL components (to be implemented)
-# include("shacl/types.jl")
-# include("shacl/parser.jl")
-# include("shacl/constraints.jl")
-# include("shacl/validator.jl")
+# Include SHACL components
+include("shacl/types.jl")
+include("shacl/validator.jl")
+# include("shacl/parser.jl")  # To be implemented
 
 end # module SemanticWeb
