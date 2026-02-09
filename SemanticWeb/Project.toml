@@ -4,9 +4,11 @@ version = "0.1.0"
 authors = ["Åsmund Hjulstad <ahju@equinor.com>"]
 
 [deps]
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 Serd = "42699a24-3520-5f41-a549-6a478ed667c2"
 
 [compat]
+Revise = "3.13.2"
 Serd = "0.3.1"
 julia = "1.9"
 
