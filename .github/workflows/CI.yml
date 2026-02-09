@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        julia-version: ['1.12', '1.13-beta']
+        julia-version: ['1.12', 'pre']
         os: [ubuntu-latest]
         include:
           - os: windows-latest
