@@ -28,6 +28,15 @@ export validate, ValidationReport, ValidationResult
 # Export common namespaces
 export RDF, RDFS, OWL, XSD, SHACL
 
+# Export JSON-LD types and functions
+export Context, TermDefinition, TypeMapping, ConversionOptions, JSONLDObject
+export parse_context, merge_contexts, expand_iri, compact_iri, context_to_dict
+export expand
+export jsonld_to_triples!, triples_to_jsonld
+export from_jsonld, to_jsonld
+export @jsonld
+export rdf_type, jsonld_context, field_mapping
+
 # Include RDF components
 include("rdf/types.jl")
 include("rdf/namespaces.jl")
@@ -45,5 +54,13 @@ include("sparql/parser.jl")
 include("shacl/types.jl")
 include("shacl/validator.jl")
 # include("shacl/parser.jl")  # To be implemented
+
+# Include JSON-LD components
+include("jsonld/types.jl")
+include("jsonld/context.jl")
+include("jsonld/expansion.jl")
+include("jsonld/integration.jl")
+include("jsonld/mapping.jl")
+include("jsonld/annotations.jl")
 
 end # module LinkedData

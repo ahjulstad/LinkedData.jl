@@ -4,9 +4,11 @@ version = "0.1.0"
 authors = ["Åsmund Hjulstad <asmund.hjulstad@gmail.com>"]
 
 [deps]
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 Serd = "42699a24-3520-5f41-a549-6a478ed667c2"
 
 [compat]
+JSON3 = "1"
 Serd = "0.3.1"
 julia = "1.9"
 

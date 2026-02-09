@@ -18,4 +18,10 @@ using LinkedData
     @testset "SHACL" begin
         include("shacl/test_validator.jl")
     end
+
+    # JSON-LD tests
+    @testset "JSON-LD" begin
+        include("jsonld/test_integration.jl")
+        include("jsonld/test_mapping.jl")
+    end
 end
