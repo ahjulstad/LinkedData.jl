@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/node/.claude/mcp-servers/**)",
+      "Read(//home/node/.claude/**)"
+    ]
+  }
+}
