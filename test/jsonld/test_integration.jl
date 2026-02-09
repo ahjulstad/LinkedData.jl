@@ -54,7 +54,7 @@ using JSON3
         @test has_triple(store, Triple(alice, RDF.type_, IRI("http://schema.org/Person")))
         @test has_triple(store, Triple(alice, IRI("http://schema.org/name"), Literal("Alice")))
         @test has_triple(store, Triple(alice, IRI("http://schema.org/email"), Literal("alice@example.org")))
-        @test has_triple(store, Triple(alice, IRI("http://schema.org/age"), Literal("30")))
+        @test has_triple(store, Triple(alice, IRI("http://schema.org/age"), Literal("30", IRI("http://www.w3.org/2001/XMLSchema#integer"))))
     end
 
     @testset "Parse JSON-LD without @id (Blank Node)" begin

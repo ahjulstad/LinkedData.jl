@@ -216,7 +216,12 @@ end
 # Helper to unwrap JSON-LD value objects
 function _unwrap_value(val)
     if val isa Vector
-        return [_unwrap_single_value(v) for v in val]
+        # Unwrap each element
+        unwrapped = [_unwrap_single_value(v) for v in val]
+        # If single-element array, return the element directly
+        # (JSON-LD expanded form uses arrays for all properties,
+        # but for convenience we unwrap single values)
+        return length(unwrapped) == 1 ? unwrapped[1] : unwrapped
     else
         return _unwrap_single_value(val)
     end

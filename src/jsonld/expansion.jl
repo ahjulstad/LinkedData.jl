@@ -137,7 +137,7 @@ function expand_object(obj::Dict, context::Context)::Dict
 
         # Handle @type
         if key_str == "@type"
-            if value isa Vector
+            if value isa AbstractArray
                 result["@type"] = [expand_iri(string(v), context) for v in value]
             else
                 result["@type"] = [expand_iri(string(value), context)]
@@ -208,8 +208,8 @@ function expand_property_value(value, context::Context, property::String)
         type_coercion = term_def.type_mapping
     end
 
-    # Array
-    if value isa Vector
+    # Array (handle both Vector and JSON3.Array)
+    if value isa AbstractArray
         result = []
         for item in value
             expanded_item = expand_single_value(item, context, type_coercion)
@@ -243,8 +243,13 @@ function expand_single_value(value, context::Context, type_coercion::Union{Strin
         return nothing
     end
 
-    # Object
-    if value isa Dict
+    # Object (handle both Dict and JSON3.Object)
+    if value isa Dict || value isa JSON3.Object
+        # Convert JSON3.Object to Dict if needed
+        if !(value isa Dict)
+            value = Dict{String, Any}(String(k) => v for (k, v) in pairs(value))
+        end
+
         # Check if it's a value object
         if haskey(value, "@value")
             return value  # Already expanded
