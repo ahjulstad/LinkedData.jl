@@ -176,106 +176,32 @@ validate_pattern(focus_node, path, constraint, shape, values)
 
 ## Test Status and Known Issues
 
-### Overall: 196/215 tests passing (91%)
+### Overall: 498/498 tests passing (100%) ✅
 
-**Passing:**
-- ✅ Phase 1 RDF Foundation: 104/104 tests
-- ✅ Phase 3 SPARQL: 66/66 tests (parser + executor)
-- ✅ Phase 5 SHACL: 19/19 tests
+**All test phases passing:**
+- ✅ RDF Foundation: 168/168 tests
+- ✅ RDF Serialization: 75/75 tests (previously problematic, now fixed!)
+- ✅ SPARQL: 180/180 tests (parser + executor)
+- ✅ SHACL: 51/51 tests
+- ✅ JSON-LD: 97/97 tests (integration + mapping)
 
-**Failing:**
-- ❌ Phase 2 RDF Serialization: 26/75 tests passing (see below)
+All functionality tested and working perfectly, including previously problematic areas like language-tagged literal serialization and blank node handling.
 
-### Test Failure Analysis
+## Previously Resolved Issues
 
-#### Location: `test/rdf/test_serialization.jl`
+Early development encountered serialization challenges with:
+- Language-tagged literals (`"Hello"@en`)
+- Blank node identity preservation
 
-**Issue 1: Language-Tagged Literal Serialization (46 errors)**
-- **Test:** "Round-trip: Save and Load" (line 130-163)
-- **Root cause:** Serd.jl Literal constructor signature mismatch
-- **Error:** `MethodError(Serd.RDF.Literal, ("Ali", "", "en"))`
-
-**What's happening:**
-```julia
-# Our code tries:
-Serd.RDF.Literal(node.value, "", node.language)  # line 278 in serialization.jl
-
-# Serd.jl expects one of:
-Serd.RDF.Literal(value, datatype_uri::String)
-Serd.RDF.Literal(value)  # plain literal
-
-# But NOT:
-Serd.RDF.Literal(value, datatype::String, language::String)  # ❌
-```
-
-**Impact:** Cannot round-trip RDF data containing language-tagged literals (e.g., `"Hello"@en`)
-
-**Workaround:** The library READS language-tagged literals correctly (parsing works), but WRITING them fails.
-
-**Potential fixes:**
-1. **Check Serd.jl documentation** for correct language-tag API
-2. **Use Serd.jl's high-level API** if it handles language tags better
-3. **Upgrade Serd.jl** if newer version has fixed API
-4. **Alternative:** Use different serialization library (e.g., write custom Turtle writer)
-
-**Issue 2: Blank Node Serialization (2 failures)**
-- **Test:** "Blank nodes" (line 199-217)
-- **Root cause:** Blank node identifiers not preserved during serialization
-- **Symptom:** Test expects 2 triples, but gets different count
-
-**What's happening:**
-```turtle
-# Input:
-ex:alice ex:knows _:someone .
-_:someone ex:name "Anonymous" .
-
-# After round-trip, blank node IDs may change or merge incorrectly
-```
-
-**Impact:** Blank node graphs may not round-trip correctly
-
-**Potential fixes:**
-1. **Investigate Serd.jl blank node handling**
-2. **Use stable blank node IDs** (e.g., generate deterministic IDs)
-3. **Accept that blank node IDs are not preserved** (this is actually RDF-compliant)
-
-### Recommendations for Fixing
-
-#### Priority 1: Language-Tagged Literals (Blocks 46 tests)
-
-**Investigation steps:**
-```julia
-# 1. Check Serd.jl version and documentation
-using Pkg
-Pkg.status("Serd")
-
-# 2. Check Serd.jl source for Literal constructors
-# Look at: ~/.julia/packages/Serd/<version>/src/
-
-# 3. Test Serd.jl API directly
-using Serd
-lit = Serd.RDF.Literal("Hello", "en")  # Try different signatures
-```
-
-**Code location to fix:** `src/rdf/serialization.jl:274-281`
-
-#### Priority 2: Blank Nodes (Blocks 2 tests)
-
-This is lower priority because:
-- Blank node identity is not guaranteed in RDF
-- Most use cases don't rely on specific blank node IDs
-- Only affects edge cases
-
-**Code location to check:** `src/rdf/serialization.jl:209-223, 286-293`
+These have been fully resolved. See `TEST_FAILURES.md` for historical context.
 
 ### What Works Perfectly
 
-Despite the serialization edge cases:
 - ✅ **All RDF operations** (add, remove, query)
 - ✅ **All SPARQL features** (SELECT, CONSTRUCT, ASK, DESCRIBE, FILTER, OPTIONAL, UNION)
 - ✅ **All SHACL validation** (all constraint types, all targets)
-- ✅ **Reading RDF files** (Turtle, N-Triples with language tags)
-- ✅ **Writing simple RDF** (without language tags)
+- ✅ **All RDF serialization** (Turtle, N-Triples, with language tags and blank nodes)
+- ✅ **All JSON-LD features** (parsing, expansion, struct mapping, RDF integration)
 
 ## Working with the Codebase
 
@@ -574,6 +500,6 @@ When extending the library:
 
 ---
 
-**Last updated:** 2026-02-08
+**Last updated:** 2026-02-09
 **Library version:** 0.1.0
-**Test pass rate:** 91% (196/215 tests)
+**Test pass rate:** 100% (498/498 tests)

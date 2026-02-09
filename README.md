@@ -2,7 +2,7 @@
 
 A native Julia library for working with RDF data, featuring SPARQL querying, SHACL validation, and JSON-LD struct mapping.
 
-The library is almost entirely vibe-coded. Proceed with caution!.
+The library is almost entirely vibe-coded. Proceed with caution!
 
 
 ## Documentation
@@ -852,7 +852,7 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 
 ## License
 
-[Choose your license - MIT, Apache 2.0, etc.]
+MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
@@ -866,11 +866,11 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 If you use this library in your research, please cite:
 
 ```bibtex
-@software{semanticweb_jl,
+@software{linkeddata_jl,
   title = {LinkedData.jl: A Native RDF Library for Julia},
-  author = {Your Name},
+  author = {Åsmund Hjulstad},
   year = {2026},
-  url = {https://github.com/yourusername/LinkedData.jl}
+  url = {https://github.com/ahjulstad/LinkedData.jl}
 }
 ```
 
