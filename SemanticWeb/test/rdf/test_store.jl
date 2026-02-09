@@ -276,4 +276,135 @@
         end
         @test count == 1
     end
+
+    @testset "Bulk operations" begin
+        @testset "Clear all triples" begin
+            store = RDFStore()
+
+            alice = IRI("http://example.org/alice")
+            bob = IRI("http://example.org/bob")
+            charlie = IRI("http://example.org/charlie")
+            knows = IRI("http://example.org/knows")
+
+            add!(store, alice, knows, bob)
+            add!(store, alice, knows, charlie)
+            add!(store, bob, knows, charlie)
+
+            @test count_triples(store) == 3
+
+            # Remove all triples
+            for triple in collect(triples(store))
+                remove!(store, triple)
+            end
+
+            @test count_triples(store) == 0
+            @test count_subjects(store) == 0
+            @test count_predicates(store) == 0
+        end
+
+        @testset "Bulk removal by pattern" begin
+            store = RDFStore()
+
+            alice = IRI("http://example.org/alice")
+            bob = IRI("http://example.org/bob")
+            charlie = IRI("http://example.org/charlie")
+            knows = IRI("http://example.org/knows")
+            likes = IRI("http://example.org/likes")
+
+            add!(store, alice, knows, bob)
+            add!(store, alice, knows, charlie)
+            add!(store, alice, likes, bob)
+            add!(store, bob, knows, charlie)
+
+            @test count_triples(store) == 4
+
+            # Remove all "knows" relationships
+            knows_triples = collect(triples(store, predicate=knows))
+            for triple in knows_triples
+                remove!(store, triple)
+            end
+
+            @test count_triples(store) == 1
+            @test triples(store)[1].predicate == likes
+        end
+    end
+
+    @testset "Namespace edge cases" begin
+        @testset "Empty prefix" begin
+            store = RDFStore()
+            base_ns = IRI("http://example.org/")
+            register_namespace!(store, "", base_ns)
+
+            expanded = expand(store, ":alice")
+            @test expanded == IRI("http://example.org/alice")
+        end
+
+        @testset "Override namespace" begin
+            store = RDFStore()
+            old_ns = IRI("http://old.example.org/")
+            new_ns = IRI("http://new.example.org/")
+
+            register_namespace!(store, "ex", old_ns)
+            register_namespace!(store, "ex", new_ns)
+
+            expanded = expand(store, "ex:test")
+            @test expanded == IRI("http://new.example.org/test")
+        end
+
+        @testset "Abbreviate with multiple matching namespaces" begin
+            store = RDFStore()
+            ns1 = IRI("http://example.org/")
+            ns2 = IRI("http://example.org/vocab/")
+
+            register_namespace!(store, "ex", ns1)
+            register_namespace!(store, "vocab", ns2)
+
+            # Should match the longer, more specific namespace
+            iri = IRI("http://example.org/vocab/term")
+            abbr = abbreviate(store, iri)
+            @test abbr == "vocab:term"
+        end
+    end
+
+    @testset "Edge cases for triple patterns" begin
+        @testset "Empty store queries" begin
+            store = RDFStore()
+            alice = IRI("http://example.org/alice")
+            knows = IRI("http://example.org/knows")
+
+            @test length(triples(store)) == 0
+            @test length(triples(store, subject=alice)) == 0
+            @test length(triples(store, predicate=knows)) == 0
+        end
+
+        @testset "Store with single triple" begin
+            store = RDFStore()
+            alice = IRI("http://example.org/alice")
+            knows = IRI("http://example.org/knows")
+            bob = IRI("http://example.org/bob")
+
+            add!(store, alice, knows, bob)
+
+            # All patterns should return the same single triple
+            @test length(triples(store)) == 1
+            @test length(triples(store, subject=alice)) == 1
+            @test length(triples(store, predicate=knows)) == 1
+            @test length(triples(store, object=bob)) == 1
+        end
+
+        @testset "Literal comparison" begin
+            store = RDFStore()
+            person = IRI("http://example.org/person")
+            age_pred = IRI("http://example.org/age")
+
+            age1 = Literal("30", XSD.integer)
+            age2 = Literal("30", XSD.integer)
+
+            add!(store, person, age_pred, age1)
+
+            # Should find triple with equivalent literal
+            results = triples(store, object=age2)
+            @test length(results) == 1
+        end
+    end
 end

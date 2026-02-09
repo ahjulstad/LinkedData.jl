@@ -497,4 +497,145 @@
             @test length(q.where_clause) == 3
         end
     end
+
+    @testset "Complex Query Patterns" begin
+        @testset "Chained OPTIONAL patterns" begin
+            # Query with two OPTIONAL clauses
+            # SELECT ?person ?name ?age WHERE {
+            #   ?person a foaf:Person .
+            #   OPTIONAL { ?person foaf:name ?name }
+            #   OPTIONAL { ?person foaf:age ?age }
+            # }
+            query = SelectQuery(
+                [:person, :name, :age],
+                [
+                    TriplePattern(:person, rdf_type, person_type),
+                    OptionalPattern([TriplePattern(:person, name_pred, :name)]),
+                    OptionalPattern([TriplePattern(:person, age_pred, :age)])
+                ]
+            )
+
+            result = SemanticWeb.query(store, query)
+            @test length(result) == 3
+
+            # All results should have person bound
+            for binding in result.bindings
+                @test haskey(binding, :person)
+            end
+        end
+
+        @testset "FILTER in OPTIONAL" begin
+            # SELECT ?person ?friend ?friend_age WHERE {
+            #   ?person a foaf:Person .
+            #   OPTIONAL {
+            #     ?person foaf:knows ?friend .
+            #     ?friend foaf:age ?friend_age .
+            #     FILTER(?friend_age > 30)
+            #   }
+            # }
+            query = SelectQuery(
+                [:person, :friend, :friend_age],
+                [
+                    TriplePattern(:person, rdf_type, person_type),
+                    OptionalPattern([
+                        TriplePattern(:person, knows, :friend),
+                        TriplePattern(:friend, age_pred, :friend_age),
+                        FilterPattern(
+                            ComparisonExpr(:gt, VarExpr(:friend_age), LiteralExpr(Literal("30", XSD.integer)))
+                        )
+                    ])
+                ]
+            )
+
+            result = SemanticWeb.query(store, query)
+            @test length(result) >= 3  # All three persons
+
+            # Check that filtered optional only binds when condition is met
+            for binding in result.bindings
+                if haskey(binding, :friend_age)
+                    age_value = parse(Int, binding[:friend_age].value)
+                    @test age_value > 30
+                end
+            end
+        end
+
+        @testset "UNION with different result sets" begin
+            # Query that finds both people who know someone AND people with age > 30
+            # SELECT ?person WHERE {
+            #   { ?person foaf:knows ?someone }
+            #   UNION
+            #   { ?person foaf:age ?age . FILTER(?age > 30) }
+            # }
+            query = SelectQuery(
+                [:person],
+                [
+                    UnionPattern(
+                        [TriplePattern(:person, knows, :someone)],
+                        [
+                            TriplePattern(:person, age_pred, :age),
+                            FilterPattern(
+                                ComparisonExpr(:gt, VarExpr(:age), LiteralExpr(Literal("30", XSD.integer)))
+                            )
+                        ]
+                    )
+                ]
+            )
+
+            result = SemanticWeb.query(store, query)
+
+            # Should include alice (knows someone) and charlie (age > 30)
+            persons = Set([b[:person] for b in result.bindings])
+            @test alice in persons
+            @test charlie in persons
+        end
+
+        @testset "Nested query with multiple joins" begin
+            # SELECT ?person ?person_name ?friend_name WHERE {
+            #   ?person foaf:name ?person_name .
+            #   ?person foaf:knows ?friend .
+            #   ?friend foaf:name ?friend_name .
+            #   ?friend foaf:age ?friend_age .
+            #   FILTER(?friend_age >= 25)
+            # }
+            query = SelectQuery(
+                [:person, :person_name, :friend_name],
+                [
+                    TriplePattern(:person, name_pred, :person_name),
+                    TriplePattern(:person, knows, :friend),
+                    TriplePattern(:friend, name_pred, :friend_name),
+                    TriplePattern(:friend, age_pred, :friend_age),
+                    FilterPattern(
+                        ComparisonExpr(:ge, VarExpr(:friend_age), LiteralExpr(Literal("25", XSD.integer)))
+                    )
+                ]
+            )
+
+            result = SemanticWeb.query(store, query)
+
+            # Should have valid results with all three variables bound
+            for binding in result.bindings
+                @test haskey(binding, :person)
+                @test haskey(binding, :person_name)
+                @test haskey(binding, :friend_name)
+            end
+        end
+
+        @testset "Empty result with complex pattern" begin
+            # Query that should return no results
+            # SELECT ?person WHERE {
+            #   ?person foaf:name "NonExistent" .
+            #   ?person foaf:age ?age .
+            # }
+            query = SelectQuery(
+                [:person],
+                [
+                    TriplePattern(:person, name_pred, Literal("NonExistent")),
+                    TriplePattern(:person, age_pred, :age)
+                ]
+            )
+
+            result = SemanticWeb.query(store, query)
+            @test length(result) == 0
+        end
+    end
 end
