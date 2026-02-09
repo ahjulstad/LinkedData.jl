@@ -326,7 +326,7 @@
         """
 
         parsed_query = parse_sparql(query_str)
-        result = SemanticWeb.query(store, parsed_query)
+        result = LinkedData.query(store, parsed_query)
 
         @test length(result) == 2
         names = Set([b[:name].value for b in result.bindings])
@@ -353,7 +353,7 @@
         """
 
         parsed_query = parse_sparql(query_str)
-        result = SemanticWeb.query(store, parsed_query)
+        result = LinkedData.query(store, parsed_query)
 
         @test length(result) == 1
         @test result.bindings[1][:person] == alice

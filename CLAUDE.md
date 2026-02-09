@@ -1,10 +1,10 @@
 # Claude Code Development Guide
 
-This document provides context and guidance for Claude Code (or other AI assistants) working on SemanticWeb.jl.
+This document provides context and guidance for Claude Code (or other AI assistants) working on LinkedData.jl.
 
 ## System Overview
 
-SemanticWeb.jl is a **native Julia RDF library** providing:
+LinkedData.jl is a **native Julia RDF library** providing:
 1. **RDF triple storage** with hexastore indexing
 2. **SPARQL query execution** with full parser
 3. **SHACL validation** for data quality
@@ -12,9 +12,9 @@ SemanticWeb.jl is a **native Julia RDF library** providing:
 ### Architecture
 
 ```
-SemanticWeb.jl/
+LinkedData.jl/
 ├── src/
-│   ├── SemanticWeb.jl          # Main module (exports)
+│   ├── LinkedData.jl          # Main module (exports)
 │   ├── rdf/                    # RDF Foundation
 │   │   ├── types.jl            # Core types (IRI, Literal, BlankNode, Triple)
 │   │   ├── store.jl            # RDFStore with hexastore (SPO, OPS, PSO)
@@ -542,7 +542,7 @@ julia --project=. --code-coverage=user -e 'using Pkg; Pkg.test()'
 julia --project=.
 
 # Precompile package
-julia --project=. -e 'using SemanticWeb'
+julia --project=. -e 'using LinkedData'
 
 # Run tests
 julia --project=. -e 'using Pkg; Pkg.test()'

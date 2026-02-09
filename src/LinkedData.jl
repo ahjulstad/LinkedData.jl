@@ -1,4 +1,4 @@
-module SemanticWeb
+module LinkedData
 
 # Export RDF types and functions
 export RDFNode, RDFTerm, IRI, Literal, BlankNode, Triple, Quad
@@ -46,4 +46,4 @@ include("shacl/types.jl")
 include("shacl/validator.jl")
 # include("shacl/parser.jl")  # To be implemented
 
-end # module SemanticWeb
+end # module LinkedData

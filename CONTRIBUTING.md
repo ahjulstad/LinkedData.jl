@@ -1,4 +1,4 @@
-# Contributing to SemanticWeb.jl
+# Contributing to LinkedData.jl
 
 Thank you for your interest in contributing! This guide will help you get started.
 
@@ -14,8 +14,8 @@ Thank you for your interest in contributing! This guide will help you get starte
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/SemanticWeb.jl.git
-cd SemanticWeb.jl
+git clone https://github.com/yourusername/LinkedData.jl.git
+cd LinkedData.jl
 
 # Start Julia with the project
 julia --project=.
@@ -217,4 +217,4 @@ Contributors will be listed in:
 
 ---
 
-Thank you for contributing to SemanticWeb.jl! 🎉
+Thank you for contributing to LinkedData.jl! 🎉

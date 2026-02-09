@@ -5,7 +5,7 @@
 # ============================================================================
 
 module RDF
-    using ..SemanticWeb: IRI
+    using ..LinkedData: IRI
 
     const type_ = IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
     const Property = IRI("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property")
@@ -28,7 +28,7 @@ end
 # ============================================================================
 
 module RDFS
-    using ..SemanticWeb: IRI
+    using ..LinkedData: IRI
 
     const Resource = IRI("http://www.w3.org/2000/01/rdf-schema#Resource")
     const Class = IRI("http://www.w3.org/2000/01/rdf-schema#Class")
@@ -54,7 +54,7 @@ end
 # ============================================================================
 
 module OWL
-    using ..SemanticWeb: IRI
+    using ..LinkedData: IRI
 
     const Thing = IRI("http://www.w3.org/2002/07/owl#Thing")
     const Nothing = IRI("http://www.w3.org/2002/07/owl#Nothing")
@@ -83,7 +83,7 @@ end
 # ============================================================================
 
 module XSD
-    using ..SemanticWeb: IRI
+    using ..LinkedData: IRI
 
     const string = IRI("http://www.w3.org/2001/XMLSchema#string")
     const boolean = IRI("http://www.w3.org/2001/XMLSchema#boolean")
@@ -133,7 +133,7 @@ end
 # ============================================================================
 
 module SHACL
-    using ..SemanticWeb: IRI
+    using ..LinkedData: IRI
 
     # Core SHACL vocabulary
     const Shape = IRI("http://www.w3.org/ns/shacl#Shape")

@@ -1,4 +1,4 @@
-# SemanticWeb.jl
+# LinkedData.jl
 
 A native Julia library for working with RDF data, featuring SPARQL querying and SHACL validation.
 
@@ -24,15 +24,15 @@ A native Julia library for working with RDF data, featuring SPARQL querying and 
 
 ```julia
 using Pkg
-Pkg.add(url="file:///workspaces/test-mcp/SemanticWeb")  # Local install
+Pkg.add(url="file:///workspaces/test-mcp")  # Local install
 # Or from a repository:
-# Pkg.add(url="https://github.com/yourusername/SemanticWeb.jl")
+# Pkg.add(url="https://github.com/yourusername/LinkedData.jl")
 ```
 
 ## Quick Start
 
 ```julia
-using SemanticWeb
+using LinkedData
 
 # Create an RDF store
 store = RDFStore()
@@ -67,7 +67,7 @@ end
 #### Creating and Populating a Store
 
 ```julia
-using SemanticWeb
+using LinkedData
 
 # Create a new store
 store = RDFStore()
@@ -331,7 +331,7 @@ result = query(store, query)
 #### Defining Shapes
 
 ```julia
-using SemanticWeb
+using LinkedData
 
 # Create a shape that validates Person nodes
 person_shape = NodeShape(
@@ -466,7 +466,7 @@ PropertyShape(
 Here's a complete example combining RDF, SPARQL, and SHACL:
 
 ```julia
-using SemanticWeb
+using LinkedData
 
 # 1. Create and populate store
 store = RDFStore()
@@ -589,7 +589,7 @@ The library uses a hexastore indexing strategy with three indexes (SPO, OPS, PSO
 
 ```julia
 using Pkg
-Pkg.test("SemanticWeb")
+Pkg.test("LinkedData")
 ```
 
 **Current test status:** 196/215 tests passing (91% pass rate)
@@ -659,10 +659,10 @@ If you use this library in your research, please cite:
 
 ```bibtex
 @software{semanticweb_jl,
-  title = {SemanticWeb.jl: A Native RDF Library for Julia},
+  title = {LinkedData.jl: A Native RDF Library for Julia},
   author = {Your Name},
   year = {2026},
-  url = {https://github.com/yourusername/SemanticWeb.jl}
+  url = {https://github.com/yourusername/LinkedData.jl}
 }
 ```
 

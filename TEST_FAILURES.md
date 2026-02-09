@@ -295,7 +295,7 @@ _:person
 ### Most Recent Run (2026-02-08)
 
 ```
-Testing SemanticWeb
+Testing LinkedData
   RDF Foundation: 104/104 passed ✅
   RDF Serialization: 26/75 passed ⚠️
     - 2 failed (Blank nodes)
@@ -470,7 +470,7 @@ If you're working on fixing these issues:
    ```bash
    # Check what IDs look like before/after
    julia --project=. -e '
-   using SemanticWeb
+   using LinkedData
    store = RDFStore()
    # Add blank nodes
    # Serialize and reload

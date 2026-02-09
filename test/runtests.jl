@@ -1,7 +1,7 @@
 using Test
-using SemanticWeb
+using LinkedData
 
-@testset "SemanticWeb.jl" begin
+@testset "LinkedData.jl" begin
     @testset "RDF" begin
         include("rdf/test_types.jl")
         include("rdf/test_store.jl")

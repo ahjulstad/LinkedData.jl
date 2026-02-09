@@ -36,7 +36,7 @@
             [TriplePattern(:person, rdf_type, person_type)]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         @test length(result) == 3
         @test result.variables == [:person]
@@ -54,7 +54,7 @@
             [TriplePattern(:person, name_pred, :name)]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         @test length(result) == 3
         @test result.variables == [:person, :name]
@@ -73,7 +73,7 @@
             [TriplePattern(:person, knows, :friend)]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         @test length(result) == 3  # alice->bob, alice->charlie, bob->charlie
 
@@ -97,7 +97,7 @@
             ]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         # alice knows bob and charlie, bob knows charlie
         @test length(result) == 3
@@ -121,7 +121,7 @@
         where_clause = [TriplePattern(:person, knows, :friend)]
 
         query = ConstructQuery(template, where_clause)
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         @test result isa ConstructResult
         @test length(result) == 3
@@ -137,7 +137,7 @@
         @testset "ASK - Pattern Exists" begin
             # Query: ASK { alice foaf:knows bob }
             query = AskQuery([TriplePattern(alice, knows, bob)])
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
 
             @test result isa AskResult
             @test result.result == true
@@ -146,7 +146,7 @@
         @testset "ASK - Pattern Does Not Exist" begin
             # Query: ASK { bob foaf:knows alice }
             query = AskQuery([TriplePattern(bob, knows, alice)])
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
 
             @test result isa AskResult
             @test result.result == false
@@ -156,7 +156,7 @@
     @testset "DESCRIBE Query" begin
         @testset "DESCRIBE by IRI" begin
             query = DescribeQuery([alice], nothing)
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
 
             @test result isa DescribeResult
             # Should include all triples where alice is subject
@@ -172,7 +172,7 @@
             # DESCRIBE ?person WHERE { ?person foaf:name "Bob" }
             where_clause = [TriplePattern(:person, name_pred, Literal("Bob"))]
             query = DescribeQuery([:person], where_clause)
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
 
             @test result isa DescribeResult
             # Should describe Bob
@@ -190,7 +190,7 @@
                 QueryModifiers(limit=2)
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 2
         end
 
@@ -201,7 +201,7 @@
                 QueryModifiers(offset=1)
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 2  # 3 total - 1 offset
         end
 
@@ -212,7 +212,7 @@
                 QueryModifiers(limit=1, offset=1)
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 1
         end
 
@@ -227,7 +227,7 @@
                 true  # distinct
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             # Should still be 3 unique relationships
             @test length(result) == 3
         end
@@ -246,7 +246,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 1
             @test result.bindings[1][:person] == bob
         end
@@ -263,7 +263,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 2  # Alice (30) and Charlie (35)
 
             persons = Set([b[:person] for b in result.bindings])
@@ -290,7 +290,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 2  # Bob (25) and Alice (30)
 
             persons = Set([b[:person] for b in result.bindings])
@@ -312,7 +312,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 3  # All persons have names
         end
     end
@@ -341,7 +341,7 @@
             ]
         )
 
-        result = SemanticWeb.query(store2, query)
+        result = LinkedData.query(store2, query)
 
         @test length(result) == 3
 
@@ -373,7 +373,7 @@
             ]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         @test length(result) == 2
         persons = Set([b[:person] for b in result.bindings])
@@ -399,7 +399,7 @@
             ]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         # alice->bob->charlie (alice knows charlie via bob)
         # alice->charlie->? (charlie knows nobody, so no results)
@@ -415,7 +415,7 @@
             [TriplePattern(:x, IRI("http://example.org/nonexistent"), :y)]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
         @test length(result) == 0
         @test isempty(result.bindings)
     end
@@ -426,7 +426,7 @@
             [TriplePattern(:person, rdf_type, person_type)]
         )
 
-        result = SemanticWeb.query(store, query)
+        result = LinkedData.query(store, query)
 
         # Test iteration
         count = 0
@@ -515,7 +515,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 3
 
             # All results should have person bound
@@ -547,7 +547,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) >= 3  # All three persons
 
             # Check that filtered optional only binds when condition is met
@@ -581,7 +581,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
 
             # Should include alice (knows someone) and charlie (age > 30)
             persons = Set([b[:person] for b in result.bindings])
@@ -610,7 +610,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
 
             # Should have valid results with all three variables bound
             for binding in result.bindings
@@ -634,7 +634,7 @@
                 ]
             )
 
-            result = SemanticWeb.query(store, query)
+            result = LinkedData.query(store, query)
             @test length(result) == 0
         end
     end
