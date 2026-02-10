@@ -856,7 +856,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- Built with Julia 1.9+
+- Built with Julia 1.12
 - Uses [Serd.jl](https://github.com/JuliaIO/Serd.jl) for RDF serialization
 - Uses [JSON3.jl](https://github.com/quinnj/JSON3.jl) for JSON-LD parsing
 - Follows RDF 1.1, SPARQL 1.1, SHACL, and JSON-LD 1.1 specifications
